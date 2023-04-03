@@ -16,6 +16,18 @@ require("dotenv").config();
 
 
 const MAX_UINT_256 = "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff"; 
+const ETHERSCAN_TX_PAGE = {
+    1:          "https://etherscan.io/tx/",
+    5:          "https://goerli.etherscan.io/tx/",
+    10:         "https://optimistic.etherscan.io/tx/",
+    56:         "https://bscscan.com/tx/",
+    137:        "https://polygonscan.com/tx/",
+    250:        "https://ftmscan.com/tx/",
+    42161:      "https://arbiscan.io/tx/",
+    42220:      "https://celoscan.io/tx/",
+    43114:      "https://snowtrace.io/tx/",
+    524289:     "https://mumbai.polygonscan.com/tx/"
+};
 
 /**
  * Execute Child Processes
@@ -534,10 +546,17 @@ const main = async() => {
                                     txQuote.data,
                                     { gasPrice: txQuote.gasPrice }
                                 );
-                                console.log(tx, "\n");
-                                console.log("Transaction submitted successfully, checking next order...\n");
-                                // console.log(await tx.wait(), "\n");
-                                // console.log("Order cleared successfully, checking next order...\n");
+                                console.log(ETHERSCAN_TX_PAGE[chainId] + tx.hash, "\n");
+                                console.log("Transaction submitted successfully to the network, see the link above for details, waiting for tx to mine...\n");
+                                try {
+                                    await tx.wait();
+                                    console.log(`Clear amount: ${quoteAmount.toString()}`);
+                                    console.log(`Clear guaranteed price: ${txQuote.guaranteedPrice}`);
+                                    console.log("Order cleared successfully, checking next order...\n");
+                                }
+                                catch (_e) {
+                                    console.log("Order did not clear, checking next order...");
+                                }
                             }
                             catch (_e) {
                                 console.log(_e, "\n");
